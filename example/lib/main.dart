@@ -51,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
     _appBuildContext = context;
     spw = spw.withRationale(
       buildContext: _appBuildContext,
-      rationalWidget: testDialog,
+      rationaleWidget: testDialog,
     );
 
     return Scaffold(
