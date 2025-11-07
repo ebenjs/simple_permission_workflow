@@ -3,6 +3,7 @@ description: "Permission request workflow made simple."
 version: 0.0.1
 homepage: https://github.com/ebenjs/simple_permission_workflow.git
 repository: https://github.com/ebenjs/simple_permission_workflow.git
+license: "Apache-2.0"
 
 environment:
   sdk: ^3.9.2
