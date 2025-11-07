@@ -82,9 +82,9 @@ void main() {
 
   test(
     'launchWorkflow calls the correct service and returns the correct response for permission already granted',
-        () async {
+    () async {
       SimplePermissionWorkflow simplePermissionWorkflowPlugin =
-      SimplePermissionWorkflow();
+          SimplePermissionWorkflow();
 
       final plugin = SimplePermissionWorkflow({
         SPWPermission.contacts: () =>

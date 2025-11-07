@@ -38,12 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget testDialog = AlertDialog(
     title: const Text('Hello 👋'),
     content: const Text('This is an AlertDialog!'),
-    actions: [
-      TextButton(
-        onPressed: () {},
-        child: const Text('Close'),
-      ),
-    ],
+    actions: [TextButton(onPressed: () {}, child: const Text('Close'))],
   );
 
   @override

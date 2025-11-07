@@ -5,20 +5,20 @@ import 'package:simple_permission_workflow/simple_permission_workflow_method_cha
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  MethodChannelSimplePermissionWorkflow platform = MethodChannelSimplePermissionWorkflow();
+  MethodChannelSimplePermissionWorkflow platform =
+      MethodChannelSimplePermissionWorkflow();
   const MethodChannel channel = MethodChannel('simple_permission_workflow');
 
   setUp(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-      channel,
-      (MethodCall methodCall) async {
-        return '42';
-      },
-    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+          return '42';
+        });
   });
 
   tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, null);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, null);
   });
 
   test('getPlatformVersion', () async {
