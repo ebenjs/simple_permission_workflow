@@ -92,14 +92,14 @@ TestWidgetsFlutterBinding.ensureInitialized();
 
 ```dart
 class FakeService implements SPWPermissionService {
-  final SPWResponse result;
-  FakeService(this.result);
+  final PermissionStatus status;
+  FakeService(this.status);
   @override
-  Future<SPWResponse> request(SPWPermission permission) async => result;
+  Future<PermissionStatus> request() async => status;
 }
 
 final plugin = SimplePermissionWorkflow({
-  SPWPermission.contacts: () => FakeService(fakeResponse),
+  SPWPermission.contacts: () => FakeService(PermissionStatus.granted),
 });
 ```
 
