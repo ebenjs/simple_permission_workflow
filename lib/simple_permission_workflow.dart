@@ -62,10 +62,10 @@ class SimplePermissionWorkflow {
       case PermissionStatus.denied:
         spwResponse.granted = false;
         spwResponse.reason = "permission denied";
-        if (_rationalWidget != null && _buildContext != null) {
+        if (_rationaleWidget != null && _buildContext != null) {
           await _showCustomDialog(
             context: _buildContext!,
-            dialog: _rationalWidget!,
+            dialog: _rationaleWidget!,
           );
         }
         final requestResult = await service.request();
@@ -91,13 +91,13 @@ class SimplePermissionWorkflow {
             spwResponse.granted = false;
             spwResponse.reason =
                 requestResult == PermissionStatus.permanentlyDenied
-                    ? "permanently denied after request"
-                    : "restricted after request";
-            if (_permanentlyDeniedRationalWidget != null &&
+                ? "permanently denied after request"
+                : "restricted after request";
+            if (_permanentlyDeniedRationaleWidget != null &&
                 _buildContext != null) {
               await _showCustomDialog(
                 context: _buildContext!,
-                dialog: _permanentlyDeniedRationalWidget!,
+                dialog: _permanentlyDeniedRationaleWidget!,
               );
             }
             await openAppSettings();
@@ -110,10 +110,11 @@ class SimplePermissionWorkflow {
         spwResponse.reason = checkStatus == PermissionStatus.permanentlyDenied
             ? "permanently denied"
             : "restricted by OS";
-        if (_permanentlyDeniedRationalWidget != null && _buildContext != null) {
+        if (_permanentlyDeniedRationaleWidget != null &&
+            _buildContext != null) {
           await _showCustomDialog(
             context: _buildContext!,
-            dialog: _permanentlyDeniedRationalWidget!,
+            dialog: _permanentlyDeniedRationaleWidget!,
           );
         }
         await openAppSettings();

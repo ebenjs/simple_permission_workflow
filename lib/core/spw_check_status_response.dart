@@ -1,1 +1,7 @@
-enum SPWCheckStatusResponse { granted, denied, permanentlyDenied, restricted, limited }
+enum SPWCheckStatusResponse {
+  granted,
+  denied,
+  permanentlyDenied,
+  restricted,
+  limited,
+}

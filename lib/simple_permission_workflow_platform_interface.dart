@@ -8,7 +8,8 @@ abstract class SimplePermissionWorkflowPlatform extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static SimplePermissionWorkflowPlatform _instance = MethodChannelSimplePermissionWorkflow();
+  static SimplePermissionWorkflowPlatform _instance =
+      MethodChannelSimplePermissionWorkflow();
 
   /// The default instance of [SimplePermissionWorkflowPlatform] to use.
   ///
