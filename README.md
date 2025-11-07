@@ -1,15 +1,133 @@
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/ebenjs/simple_permission_workflow?utm_source=oss&utm_medium=github&utm_campaign=ebenjs%2Fsimple_permission_workflow&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 # simple_permission_workflow
 
-A new Flutter project.
+A small Dart/Flutter library that simplifies usage of the `permission_handler` inner library by offering a centralized permission workflow (status check, rationale dialog, request, open app settings).
 
-## Getting Started
+## Features
+- Single workflow to check and request permissions.
+- Optional rationale UI support via `withRationale`.
+- Injection of service factories to replace real permission services with fakes for tests.
+- Returns a structured `SPWResponse` describing the result.
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/to/develop-plugins),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+## Quick highlights
+- Avoids direct calls to native `permission_handler` code in tests by allowing to inject fake services.
+- Designed to be small and testable.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Installation
+Add the package to your `pubspec.yaml` (adjust source as required):
 
+```yaml
+dependencies:
+  simple_permission_workflow:
+    path: ../simple_permission_workflow
+```
+
+Then run:
+
+```shell
+flutter pub get
+```
+
+## Usage
+
+Basic usage:
+
+```dart
+final spw = SimplePermissionWorkflow();
+final response = await spw.launchWorkflow(SPWPermission.contacts);
+
+if (response.granted) {
+  // permission granted
+} else {
+  // handle denied or permanently denied
+}
+```
+
+Using `withRationale` (optional): supply widgets to display rationale dialogs before requesting permissions.
+
+```dart
+final spw = SimplePermissionWorkflow().withRationale(
+  buildContext: context,
+  rationaleWidget: MyRationaleWidget(),               // shown when rationale needed
+  permanentlyDeniedRationalWidget: MyPermanentWidget()// shown when permanently denied
+);
+
+final response = await spw.launchWorkflow(SPWPermission.location);
+```
+
+Service factory injection (recommended for testing):
+
+```dart
+final fakeResponse = SPWResponse()
+  ..granted = true
+  ..reason = 'granted';
+
+final plugin = SimplePermissionWorkflow({
+  SPWPermission.contacts: () => FakeContactsService(fakeResponse),
+});
+
+final res = await plugin.launchWorkflow(SPWPermission.contacts);
+```
+
+`FakeContactsService` is any implementation of `SPWPermissionService` that returns the expected `SPWResponse`.
+
+## API notes
+
+- `SimplePermissionWorkflow([Map<SPWPermission, SPWPermissionService Function()>? factories])`  
+  By default the plugin registers real service factories (e.g. `SPWContactsPermission`). Passing a map allows overriding any permission service with a factory returning a custom or fake implementation.
+
+- `Future<SPWResponse> launchWorkflow(SPWPermission permission)`  
+  Finds the factory for `permission`, instantiates the service and runs its `request` method. If no factory is found, it throws `ArgumentError`.
+
+## Testing
+
+To avoid `MissingPluginException` and binding errors in tests:
+
+1. Initialize Flutter bindings at top of your test `main()`:
+```dart
+TestWidgetsFlutterBinding.ensureInitialized();
+```
+
+2. Inject fake services instead of using platform `MethodChannel` based implementations:
+
+```dart
+class FakeService implements SPWPermissionService {
+  final SPWResponse result;
+  FakeService(this.result);
+  @override
+  Future<SPWResponse> request(SPWPermission permission) async => result;
+}
+
+final plugin = SimplePermissionWorkflow({
+  SPWPermission.contacts: () => FakeService(fakeResponse),
+});
+```
+
+3. To test a `Future` that should throw, do NOT `await` it directly. Use one of these forms:
+```dart
+// let expect handle the Future
+expect(plugin.launchWorkflow(SPWPermission.location), throwsArgumentError);
+
+// or await expectLater
+await expectLater(plugin.launchWorkflow(SPWPermission.location), throwsArgumentError);
+```
+
+4. Compare fields of `SPWResponse` (e.g. `res.granted`) rather than instance identity unless `==` is implemented.
+
+Run tests:
+
+```bash
+flutter test
+```
+
+## Development notes
+
+- The project exposes `SimplePermissionWorkflowPlatform` and a MethodChannel implementation for runtime use. Tests should avoid swapping to platform MethodChannel unless the platform is properly mocked.
+- To add a new permission type: implement an `SPWPermissionService` in `services/impl/`, register its factory in the default constructor map or rely on injection.
+- Keep UI rationale widgets out of core logic; `withRationale` simply holds references and triggers dialogs only if a valid `BuildContext` is given.
+
+## Contributing
+See `CONTRIBUTING.md` for contribution guidelines, testing conventions and PR process.
+
+## License
+Choose a license and add it to the repository (e.g. MIT, BSD, etc.).

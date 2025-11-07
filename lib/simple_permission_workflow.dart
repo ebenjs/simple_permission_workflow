@@ -9,8 +9,19 @@ import 'simple_permission_workflow_platform_interface.dart';
 
 class SimplePermissionWorkflow {
   BuildContext? _buildContext;
-  late Widget? _rationalWidget;
-  late Widget? _permanentlyDeniedRationalWidget;
+  Widget? _rationalWidget;
+  Widget? _permanentlyDeniedRationalWidget;
+
+  Future<String?> getPlatformVersion() {
+    return SimplePermissionWorkflowPlatform.instance.getPlatformVersion();
+  }
+
+  SimplePermissionWorkflow([
+    Map<SPWPermission, SPWPermissionService Function()>? factory,
+  ]) {
+    _factory =
+        factory ?? {SPWPermission.contacts: () => SPWContactsPermission()};
+  }
 
   SimplePermissionWorkflow withRationale({
     required BuildContext buildContext,
@@ -21,10 +32,6 @@ class SimplePermissionWorkflow {
     _rationalWidget = rationalWidget;
     _permanentlyDeniedRationalWidget = permanentlyDeniedRationalWidget;
     return this;
-  }
-
-  Future<String?> getPlatformVersion() {
-    return SimplePermissionWorkflowPlatform.instance.getPlatformVersion();
   }
 
   Future<SPWResponse> launchWorkflow(SPWPermission permission) async {
@@ -85,7 +92,7 @@ class SimplePermissionWorkflow {
     return spwResponse;
   }
 
-  final Map<SPWPermission, SPWPermissionService Function()> _factory = {
+  Map<SPWPermission, SPWPermissionService Function()> _factory = {
     SPWPermission.contacts: () => SPWContactsPermission(),
   };
 

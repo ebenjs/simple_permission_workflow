@@ -1,5 +1,4 @@
 import 'package:permission_handler/permission_handler.dart';
-import 'package:simple_permission_workflow/core/spw_check_status_response.dart';
 import 'package:simple_permission_workflow/services/permission_service.dart';
 
 class SPWContactsPermission implements SPWPermissionService {
