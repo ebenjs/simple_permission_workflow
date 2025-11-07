@@ -10,7 +10,7 @@ import 'simple_permission_workflow_platform_interface.dart';
 class SimplePermissionWorkflow {
   BuildContext? _buildContext;
   Widget? _rationalWidget;
-  Widget? _permanentlyDeniedRationalWidget;
+  Widget? _permanentlyDeniedRationaleWidget;
 
   Future<String?> getPlatformVersion() {
     return SimplePermissionWorkflowPlatform.instance.getPlatformVersion();
@@ -26,11 +26,11 @@ class SimplePermissionWorkflow {
   SimplePermissionWorkflow withRationale({
     required BuildContext buildContext,
     required Widget rationalWidget,
-    Widget? permanentlyDeniedRationalWidget,
+    Widget? permanentlyDeniedRationaleWidget,
   }) {
     _buildContext = buildContext;
     _rationalWidget = rationalWidget;
-    _permanentlyDeniedRationalWidget = permanentlyDeniedRationalWidget;
+    _permanentlyDeniedRationaleWidget = permanentlyDeniedRationaleWidget;
     return this;
   }
 
@@ -69,10 +69,10 @@ class SimplePermissionWorkflow {
       } else if (requestResult.isPermanentlyDenied) {
         spwResponse.granted = false;
         spwResponse.reason = "permanently denied after request";
-        if (_permanentlyDeniedRationalWidget != null && _buildContext != null) {
+        if (_permanentlyDeniedRationaleWidget != null && _buildContext != null) {
           await _showCustomDialog(
             context: _buildContext!,
-            dialog: _permanentlyDeniedRationalWidget!,
+            dialog: _permanentlyDeniedRationaleWidget!,
           );
         }
         await openAppSettings();
@@ -80,10 +80,10 @@ class SimplePermissionWorkflow {
     } else if (checkStatus == PermissionStatus.permanentlyDenied) {
       spwResponse.granted = false;
       spwResponse.reason = "permanently denied";
-      if (_permanentlyDeniedRationalWidget != null && _buildContext != null) {
+      if (_permanentlyDeniedRationaleWidget != null && _buildContext != null) {
         await _showCustomDialog(
           context: _buildContext!,
-          dialog: _permanentlyDeniedRationalWidget!,
+          dialog: _permanentlyDeniedRationaleWidget!,
         );
       }
       await openAppSettings();
