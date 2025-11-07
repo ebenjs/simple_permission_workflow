@@ -9,7 +9,7 @@ import 'simple_permission_workflow_platform_interface.dart';
 
 class SimplePermissionWorkflow {
   BuildContext? _buildContext;
-  Widget? _rationalWidget;
+  Widget? _rationaleWidget;
   Widget? _permanentlyDeniedRationaleWidget;
 
   Future<String?> getPlatformVersion() {
@@ -25,11 +25,11 @@ class SimplePermissionWorkflow {
 
   SimplePermissionWorkflow withRationale({
     required BuildContext buildContext,
-    required Widget rationalWidget,
+    required Widget rationaleWidget,
     Widget? permanentlyDeniedRationaleWidget,
   }) {
     _buildContext = buildContext;
-    _rationalWidget = rationalWidget;
+    _rationaleWidget = rationaleWidget;
     _permanentlyDeniedRationaleWidget = permanentlyDeniedRationaleWidget;
     return this;
   }
@@ -53,10 +53,10 @@ class SimplePermissionWorkflow {
     } else if (checkStatus == PermissionStatus.denied) {
       spwResponse.granted = false;
       spwResponse.reason = "permission denied";
-      if (_rationalWidget != null && _buildContext != null) {
+      if (_rationaleWidget != null && _buildContext != null) {
         await _showCustomDialog(
           context: _buildContext!,
-          dialog: _rationalWidget!,
+          dialog: _rationaleWidget!,
         );
       }
       PermissionStatus requestResult = await service.request();
