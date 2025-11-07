@@ -49,7 +49,7 @@ Using `withRationale` (optional): supply widgets to display rationale dialogs be
 final spw = SimplePermissionWorkflow().withRationale(
   buildContext: context,
   rationaleWidget: MyRationaleWidget(),               // shown when rationale needed
-  permanentlyDeniedRationalWidget: MyPermanentWidget()// shown when permanently denied
+  permanentlyDeniedRationaleWidget: MyPermanentWidget()// shown when permanently denied
 );
 
 final response = await spw.launchWorkflow(SPWPermission.location);

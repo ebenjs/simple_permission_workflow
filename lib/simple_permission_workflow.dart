@@ -9,8 +9,8 @@ import 'simple_permission_workflow_platform_interface.dart';
 
 class SimplePermissionWorkflow {
   BuildContext? _buildContext;
-  Widget? _rationalWidget;
-  Widget? _permanentlyDeniedRationalWidget;
+  Widget? _rationaleWidget;
+  Widget? _permanentlyDeniedRationaleWidget;
 
   Future<String?> getPlatformVersion() {
     return SimplePermissionWorkflowPlatform.instance.getPlatformVersion();
@@ -25,12 +25,12 @@ class SimplePermissionWorkflow {
 
   SimplePermissionWorkflow withRationale({
     required BuildContext buildContext,
-    required Widget rationalWidget,
-    Widget? permanentlyDeniedRationalWidget,
+    required Widget rationaleWidget,
+    Widget? permanentlyDeniedRationaleWidget,
   }) {
     _buildContext = buildContext;
-    _rationalWidget = rationalWidget;
-    _permanentlyDeniedRationalWidget = permanentlyDeniedRationalWidget;
+    _rationaleWidget = rationaleWidget;
+    _permanentlyDeniedRationaleWidget = permanentlyDeniedRationaleWidget;
     return this;
   }
 
@@ -53,10 +53,10 @@ class SimplePermissionWorkflow {
     } else if (checkStatus == PermissionStatus.denied) {
       spwResponse.granted = false;
       spwResponse.reason = "permission denied";
-      if (_rationalWidget != null && _buildContext != null) {
+      if (_rationaleWidget != null && _buildContext != null) {
         await _showCustomDialog(
           context: _buildContext!,
-          dialog: _rationalWidget!,
+          dialog: _rationaleWidget!,
         );
       }
       PermissionStatus requestResult = await service.request();
@@ -69,10 +69,10 @@ class SimplePermissionWorkflow {
       } else if (requestResult.isPermanentlyDenied) {
         spwResponse.granted = false;
         spwResponse.reason = "permanently denied after request";
-        if (_permanentlyDeniedRationalWidget != null && _buildContext != null) {
+        if (_permanentlyDeniedRationaleWidget != null && _buildContext != null) {
           await _showCustomDialog(
             context: _buildContext!,
-            dialog: _permanentlyDeniedRationalWidget!,
+            dialog: _permanentlyDeniedRationaleWidget!,
           );
         }
         await openAppSettings();
@@ -80,10 +80,10 @@ class SimplePermissionWorkflow {
     } else if (checkStatus == PermissionStatus.permanentlyDenied) {
       spwResponse.granted = false;
       spwResponse.reason = "permanently denied";
-      if (_permanentlyDeniedRationalWidget != null && _buildContext != null) {
+      if (_permanentlyDeniedRationaleWidget != null && _buildContext != null) {
         await _showCustomDialog(
           context: _buildContext!,
-          dialog: _permanentlyDeniedRationalWidget!,
+          dialog: _permanentlyDeniedRationaleWidget!,
         );
       }
       await openAppSettings();
