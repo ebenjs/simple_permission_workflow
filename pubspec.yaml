@@ -1,7 +1,9 @@
 name: simple_permission_workflow
 description: "Permission request workflow made simple."
 version: 0.0.1
-homepage:
+homepage: https://github.com/ebenjs/simple_permission_workflow.git
+repository: https://github.com/ebenjs/simple_permission_workflow.git
+license: "Apache-2.0"
 
 environment:
   sdk: ^3.9.2
@@ -10,12 +12,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  permission_handler: ^12.0.1
   plugin_platform_interface: ^2.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  permission_handler_platform_interface: any
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

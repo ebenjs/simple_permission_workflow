@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:simple_permission_workflow/core/spw_check_status_response.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:simple_permission_workflow/core/spw_permission.dart';
 import 'package:simple_permission_workflow/core/spw_response.dart';
 import 'package:simple_permission_workflow/services/impl/contacts_permission_service.dart';
@@ -8,45 +8,122 @@ import 'package:simple_permission_workflow/services/permission_service.dart';
 import 'simple_permission_workflow_platform_interface.dart';
 
 class SimplePermissionWorkflow {
-  late BuildContext _buildContext;
-  late Widget? _rationalWidget;
-
-  SimplePermissionWorkflow withRational({
-    required BuildContext buildContext,
-    required Widget rationalWidget,
-  }) {
-    _buildContext = buildContext;
-    _rationalWidget = rationalWidget;
-    return this;
-  }
+  BuildContext? _buildContext;
+  Widget? _rationaleWidget;
+  Widget? _permanentlyDeniedRationaleWidget;
 
   Future<String?> getPlatformVersion() {
     return SimplePermissionWorkflowPlatform.instance.getPlatformVersion();
+  }
+
+  SimplePermissionWorkflow([
+    Map<SPWPermission, SPWPermissionService Function()>? factory,
+  ]) {
+    _factory =
+        factory ?? {SPWPermission.contacts: () => SPWContactsPermission()};
+  }
+
+  SimplePermissionWorkflow withRationale({
+    required BuildContext buildContext,
+    required Widget rationaleWidget,
+    Widget? permanentlyDeniedRationaleWidget,
+  }) {
+    _buildContext = buildContext;
+    _rationaleWidget = rationaleWidget;
+    _permanentlyDeniedRationaleWidget = permanentlyDeniedRationaleWidget;
+    return this;
   }
 
   Future<SPWResponse> launchWorkflow(SPWPermission permission) async {
     final factory = _factory[permission];
     if (factory == null) {
       throw ArgumentError(
-        'Service non trouvé pour le type ${permission.toString()}',
+        'Service not found for permission type ${permission.toString()}',
       );
     }
     final service = factory();
 
-    // check status
-    SPWCheckStatusResponse checkStatus = await service.checkStatus(permission);
-    if (checkStatus == SPWCheckStatusResponse.denied) {
-      // show context dialog
-      if (_rationalWidget != null) {
-        _showCustomDialog(context: _buildContext, dialog: _rationalWidget!);
-      }
-      // ask permission
+    SPWResponse spwResponse = SPWResponse();
+    PermissionStatus checkStatus = await service.checkStatus();
+
+    switch (checkStatus) {
+      case PermissionStatus.granted:
+        spwResponse.granted = true;
+        spwResponse.reason = "already granted";
+        break;
+      case PermissionStatus.limited:
+        spwResponse.granted = true;
+        spwResponse.reason = "limited access granted";
+        break;
+      case PermissionStatus.provisional:
+        spwResponse.granted = true;
+        spwResponse.reason = "provisional access granted";
+        break;
+      case PermissionStatus.denied:
+        spwResponse.granted = false;
+        spwResponse.reason = "permission denied";
+        if (_rationalWidget != null && _buildContext != null) {
+          await _showCustomDialog(
+            context: _buildContext!,
+            dialog: _rationalWidget!,
+          );
+        }
+        final requestResult = await service.request();
+        switch (requestResult) {
+          case PermissionStatus.granted:
+            spwResponse.granted = true;
+            spwResponse.reason = "granted after permission request";
+            break;
+          case PermissionStatus.limited:
+            spwResponse.granted = true;
+            spwResponse.reason = "limited access granted after request";
+            break;
+          case PermissionStatus.provisional:
+            spwResponse.granted = true;
+            spwResponse.reason = "provisional access granted after request";
+            break;
+          case PermissionStatus.denied:
+            spwResponse.granted = false;
+            spwResponse.reason = "permission denied after request";
+            break;
+          case PermissionStatus.permanentlyDenied:
+          case PermissionStatus.restricted:
+            spwResponse.granted = false;
+            spwResponse.reason =
+                requestResult == PermissionStatus.permanentlyDenied
+                    ? "permanently denied after request"
+                    : "restricted after request";
+            if (_permanentlyDeniedRationalWidget != null &&
+                _buildContext != null) {
+              await _showCustomDialog(
+                context: _buildContext!,
+                dialog: _permanentlyDeniedRationalWidget!,
+              );
+            }
+            await openAppSettings();
+            break;
+        }
+        break;
+      case PermissionStatus.permanentlyDenied:
+      case PermissionStatus.restricted:
+        spwResponse.granted = false;
+        spwResponse.reason = checkStatus == PermissionStatus.permanentlyDenied
+            ? "permanently denied"
+            : "restricted by OS";
+        if (_permanentlyDeniedRationalWidget != null && _buildContext != null) {
+          await _showCustomDialog(
+            context: _buildContext!,
+            dialog: _permanentlyDeniedRationalWidget!,
+          );
+        }
+        await openAppSettings();
+        break;
     }
 
-    return await service.request(permission);
+    return spwResponse;
   }
 
-  final Map<SPWPermission, SPWPermissionService Function()> _factory = {
+  Map<SPWPermission, SPWPermissionService Function()> _factory = {
     SPWPermission.contacts: () => SPWContactsPermission(),
   };
 
