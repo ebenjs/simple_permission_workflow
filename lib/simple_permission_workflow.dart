@@ -44,49 +44,80 @@ class SimplePermissionWorkflow {
     final service = factory();
 
     SPWResponse spwResponse = SPWResponse();
-
     PermissionStatus checkStatus = await service.checkStatus();
 
-    if (checkStatus == PermissionStatus.granted) {
-      spwResponse.granted = true;
-      spwResponse.reason = "already granted";
-    } else if (checkStatus == PermissionStatus.denied) {
-      spwResponse.granted = false;
-      spwResponse.reason = "permission denied";
-      if (_rationaleWidget != null && _buildContext != null) {
-        await _showCustomDialog(
-          context: _buildContext!,
-          dialog: _rationaleWidget!,
-        );
-      }
-      PermissionStatus requestResult = await service.request();
-      if (requestResult.isGranted) {
+    switch (checkStatus) {
+      case PermissionStatus.granted:
         spwResponse.granted = true;
-        spwResponse.reason = "granted after permission request";
-      } else if (requestResult.isDenied) {
+        spwResponse.reason = "already granted";
+        break;
+      case PermissionStatus.limited:
+        spwResponse.granted = true;
+        spwResponse.reason = "limited access granted";
+        break;
+      case PermissionStatus.provisional:
+        spwResponse.granted = true;
+        spwResponse.reason = "provisional access granted";
+        break;
+      case PermissionStatus.denied:
         spwResponse.granted = false;
-        spwResponse.reason = "permission denied after request";
-      } else if (requestResult.isPermanentlyDenied) {
-        spwResponse.granted = false;
-        spwResponse.reason = "permanently denied after request";
-        if (_permanentlyDeniedRationaleWidget != null && _buildContext != null) {
+        spwResponse.reason = "permission denied";
+        if (_rationalWidget != null && _buildContext != null) {
           await _showCustomDialog(
             context: _buildContext!,
-            dialog: _permanentlyDeniedRationaleWidget!,
+            dialog: _rationalWidget!,
+          );
+        }
+        final requestResult = await service.request();
+        switch (requestResult) {
+          case PermissionStatus.granted:
+            spwResponse.granted = true;
+            spwResponse.reason = "granted after permission request";
+            break;
+          case PermissionStatus.limited:
+            spwResponse.granted = true;
+            spwResponse.reason = "limited access granted after request";
+            break;
+          case PermissionStatus.provisional:
+            spwResponse.granted = true;
+            spwResponse.reason = "provisional access granted after request";
+            break;
+          case PermissionStatus.denied:
+            spwResponse.granted = false;
+            spwResponse.reason = "permission denied after request";
+            break;
+          case PermissionStatus.permanentlyDenied:
+          case PermissionStatus.restricted:
+            spwResponse.granted = false;
+            spwResponse.reason =
+                requestResult == PermissionStatus.permanentlyDenied
+                    ? "permanently denied after request"
+                    : "restricted after request";
+            if (_permanentlyDeniedRationalWidget != null &&
+                _buildContext != null) {
+              await _showCustomDialog(
+                context: _buildContext!,
+                dialog: _permanentlyDeniedRationalWidget!,
+              );
+            }
+            await openAppSettings();
+            break;
+        }
+        break;
+      case PermissionStatus.permanentlyDenied:
+      case PermissionStatus.restricted:
+        spwResponse.granted = false;
+        spwResponse.reason = checkStatus == PermissionStatus.permanentlyDenied
+            ? "permanently denied"
+            : "restricted by OS";
+        if (_permanentlyDeniedRationalWidget != null && _buildContext != null) {
+          await _showCustomDialog(
+            context: _buildContext!,
+            dialog: _permanentlyDeniedRationalWidget!,
           );
         }
         await openAppSettings();
-      }
-    } else if (checkStatus == PermissionStatus.permanentlyDenied) {
-      spwResponse.granted = false;
-      spwResponse.reason = "permanently denied";
-      if (_permanentlyDeniedRationaleWidget != null && _buildContext != null) {
-        await _showCustomDialog(
-          context: _buildContext!,
-          dialog: _permanentlyDeniedRationaleWidget!,
-        );
-      }
-      await openAppSettings();
+        break;
     }
 
     return spwResponse;
