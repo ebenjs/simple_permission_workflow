@@ -55,6 +55,28 @@ final spw = SimplePermissionWorkflow().withRationale(
 final response = await spw.launchWorkflow(SPWPermission.location);
 ```
 
+openSettingsOnDismiss (optional):
+
+- Type: `bool`
+- Default: `false`
+
+When set to `true`, if the permission is permanently denied or restricted (either from the initial status check or after a permission request), the library will—after showing the `permanentlyDeniedRationaleWidget` (if provided) and after that dialog is dismissed—call `openAppSettings()` to open the platform app settings so the user can enable the permission manually. If no `permanentlyDeniedRationaleWidget` is provided but `openSettingsOnDismiss` is `true`, the plugin will still open the app settings when it detects a permanently denied / restricted status.
+
+Example enabling automatic opening of app settings after dismissing the permanently-denied rationale dialog:
+
+```dart
+final spw = SimplePermissionWorkflow().withRationale(
+  buildContext: context,
+  rationaleWidget: MyRationaleWidget(),
+  permanentlyDeniedRationaleWidget: MyPermanentWidget(),
+  openSettingsOnDismiss: true, // open settings after permanently-denied dialog dismiss
+);
+
+final response = await spw.launchWorkflow(SPWPermission.contacts);
+```
+
+Use this option thoughtfully: opening settings interrupts the app flow and may not be appropriate in all UX contexts (consider platform conventions and user expectations).
+
 Service factory injection (recommended for testing):
 
 ```dart
@@ -78,6 +100,8 @@ final res = await plugin.launchWorkflow(SPWPermission.contacts);
 
 - `Future<SPWResponse> launchWorkflow(SPWPermission permission)`  
   Finds the factory for `permission`, instantiates the service and runs its `request` method. If no factory is found, it throws `ArgumentError`.
+
+- `SimplePermissionWorkflow.withRationale(...)` supports an optional `openSettingsOnDismiss` boolean parameter. Default `false`. When true, the workflow will call `openAppSettings()` after permanently denied / restricted status is shown and the permanently-denied rationale dialog (if any) is dismissed.
 
 ## Testing
 

@@ -12,6 +12,7 @@ class SimplePermissionWorkflow {
   BuildContext? _buildContext;
   Widget? _rationaleWidget;
   Widget? _permanentlyDeniedRationaleWidget;
+  bool _openSettingsOnDismiss = false;
   late final Map<SPWPermission, SPWPermissionService Function()>?
   _instanceFactory;
 
@@ -29,10 +30,12 @@ class SimplePermissionWorkflow {
     required BuildContext buildContext,
     required Widget rationaleWidget,
     Widget? permanentlyDeniedRationaleWidget,
+    bool? openSettingsOnDismiss,
   }) {
     _buildContext = buildContext;
     _rationaleWidget = rationaleWidget;
     _permanentlyDeniedRationaleWidget = permanentlyDeniedRationaleWidget;
+    _openSettingsOnDismiss = openSettingsOnDismiss ?? false;
     return this;
   }
 
@@ -102,7 +105,9 @@ class SimplePermissionWorkflow {
                 dialog: _permanentlyDeniedRationaleWidget!,
               );
             }
-            await openAppSettings();
+            if (_openSettingsOnDismiss) {
+              await openAppSettings();
+            }
             break;
         }
         break;
@@ -119,12 +124,16 @@ class SimplePermissionWorkflow {
             dialog: _permanentlyDeniedRationaleWidget!,
           );
         }
-        await openAppSettings();
+        if (_openSettingsOnDismiss) {
+          await openAppSettings();
+        }
         break;
     }
 
     return spwResponse;
   }
+
+  void openSettings() => openAppSettings();
 
   final Map<SPWPermission, SPWPermissionService Function()> _factory = {
     SPWPermission.contacts: () => SPWContactsPermission(),

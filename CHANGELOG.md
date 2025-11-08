@@ -1,3 +1,6 @@
+## 0.0.4
+- added openSettingsOnDismiss option
+- improved documentation
 ## 0.0.3
 
 - notifications permission added
