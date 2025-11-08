@@ -1,6 +1,6 @@
 name: simple_permission_workflow
 description: "A library that simplifies usage of the permission_handler inner library by offering a centralized permission workflow."
-version: 0.0.5
+version: 0.0.6
 homepage: https://github.com/ebenjs/simple_permission_workflow.git
 repository: https://github.com/ebenjs/simple_permission_workflow.git
 license: "Apache-2.0"

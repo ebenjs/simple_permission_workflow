@@ -18,7 +18,7 @@ Add the package to your `pubspec.yaml` (adjust source as required):
 
 ```yaml
 dependencies:
-  simple_permission_workflow: 0.0.5
+  simple_permission_workflow: 0.0.6
 ```
 
 Then run:
