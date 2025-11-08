@@ -18,12 +18,12 @@ Add the package to your `pubspec.yaml` (adjust source as required):
 
 ```yaml
 dependencies:
-  simple_permission_workflow: 0.0.6
+  simple_permission_workflow: 0.0.7
 ```
 
 Then run:
 
-```shell
+```bash
 flutter pub get
 ```
 
@@ -48,7 +48,8 @@ Using `withRationale` (optional): supply widgets to display rationale dialogs be
 final spw = SimplePermissionWorkflow().withRationale(
   buildContext: context,
   rationaleWidget: MyRationaleWidget(),               // shown when rationale needed
-  permanentlyDeniedRationaleWidget: MyPermanentWidget()// shown when permanently denied
+  permanentlyDeniedRationaleWidget: MyPermanentWidget(), // shown when permanently denied
+  openSettingsOnDismiss: true, // optional: open app settings after dismiss
 );
 
 final response = await spw.launchWorkflow(SPWPermission.location);
@@ -59,7 +60,7 @@ openSettingsOnDismiss (optional):
 - Type: `bool`
 - Default: `false`
 
-When set to `true`, if the permission is permanently denied or restricted (either from the initial status check or after a permission request), the library will—after showing the `permanentlyDeniedRationaleWidget` (if provided) and after that dialog is dismissed—call `openAppSettings()` to open the platform app settings so the user can enable the permission manually. If no `permanentlyDeniedRationaleWidget` is provided but `openSettingsOnDismiss` is `true`, the plugin will still open the app settings when it detects a permanently denied / restricted status.
+When set to `true`, if the permission is permanently denied or restricted (either from the initial status check or after a permission request), the library will — after showing the `permanentlyDeniedRationaleWidget` (if provided) and after that dialog is dismissed — call `openAppSettings()` to open the platform app settings so the user can enable the permission manually. If no `permanentlyDeniedRationaleWidget` is provided but `openSettingsOnDismiss` is `true`, the plugin will still open the app settings when it detects a permanently denied / restricted status.
 
 Example enabling automatic opening of app settings after dismissing the permanently-denied rationale dialog:
 
@@ -94,14 +95,14 @@ final res = await plugin.launchWorkflow(SPWPermission.contacts);
 
 ## Contacts helper methods
 
-The library exposes a typed way to access the concrete contacts permission service and use helper methods that leverage the `fast_contacts` plugin for fast contact fetching.
+The library exposes a typed way to access the concrete contacts permission service and helper methods that leverage the `fast_contacts` plugin for fast contact fetching and simple cleanup.
 
 Example usage:
 
 ```dart
 final spw = SimplePermissionWorkflow();
 
-// 1) (Optional) run the permission workflow to request/check permission
+// 1) Ensure permission is granted via workflow
 final response = await spw.launchWorkflow(SPWPermission.contacts);
 if (!response.granted) {
   // handle denied / permanently denied
@@ -112,27 +113,33 @@ if (!response.granted) {
 SPWContactsPermission perm =
     spw.getServiceInstance<SPWContactsPermission>(SPWPermission.contacts);
 
-// 3) Fetch contacts using fast_contacts (returns List<Contact>)
+// 3) Fetch contacts (uses fast_contacts internally)
 List<Contact> fetchedContacts = await perm.retrieveContacts();
 
-// 4) Optionally order contacts by display name
+// 4) Order contacts by display name
 List<Contact> orderedContacts = await perm.orderContacts(fetchedContacts);
+
+// 5) Clean up contacts: remove empty names and contacts without phones
+final nonEmptyNames = await perm.removeEmptyNames(orderedContacts);
+final withPhones = await perm.removeEmptyPhoneNumbers(nonEmptyNames);
 ```
 
 Notes:
-- `retrieveContacts()` returns a `List<Contact>` from the `fast_contacts` package. The `Contact` model comes from `fast_contacts`.
+- `retrieveContacts()` returns a `List<Contact>` from the `fast_contacts` package.
 - `orderContacts(...)` returns a new list ordered by `displayName` (case-insensitive).
-- Make sure your Android `AndroidManifest.xml` and iOS `Info.plist` contain the required permission entries for reading contacts when using this feature.
+- `removeEmptyNames(...)` filters out contacts whose `displayName` is empty or only whitespace.
+- `removeEmptyPhoneNumbers(...)` filters out contacts that don't have at least one phone number.
+- Make sure your Android `AndroidManifest.xml` and iOS `Info.plist` contain the required permission entries for reading contacts when using these helpers.
 
 ## API notes
 
-- `SimplePermissionWorkflow([Map<SPWPermission, SPWPermissionService Function()>? factories])`  
-  By default the plugin registers real service factories (e.g. `SPWContactsPermission`). Passing a map allows overriding any permission service with a factory returning a custom or fake implementation.
+- `SimplePermissionWorkflow([Map<SPWPermission, SPWPermissionService Function()>? factories])`
+  - By default the plugin registers real service factories (e.g. `SPWContactsPermission`). Passing a map allows overriding any permission service with a factory returning a custom or fake implementation (useful for tests).
 
-- `Future<SPWResponse> launchWorkflow(SPWPermission permission)`  
-  Finds the factory for `permission`, instantiates the service and runs its `request` method. If no factory is found, it throws `ArgumentError`.
+- `Future<SPWResponse> launchWorkflow(SPWPermission permission)`
+  - Finds the factory for `permission`, instantiates the service and runs its `request` method. If no factory is found, it throws `ArgumentError`.
 
-- `SimplePermissionWorkflow.withRationale(...)` supports an optional `openSettingsOnDismiss` boolean parameter. Default `false`. When true, the workflow will call `openAppSettings()` after permanently denied / restricted status is shown and the permanently-denied rationale dialog (if any) is dismissed.
+- `SimplePermissionWorkflow.withRationale(...)` supports an optional `openSettingsOnDismiss` boolean parameter (default `false`). When true, the workflow will call `openAppSettings()` after permanently denied / restricted status is shown and the permanently-denied rationale dialog (if any) is dismissed. For contacts flows that fetch or enumerate device contacts, prefer to call `retrieveContacts()` only after `launchWorkflow` returns granted to avoid platform exceptions.
 
 ## Testing
 
@@ -143,9 +150,9 @@ To avoid `MissingPluginException` and binding errors in tests:
 TestWidgetsFlutterBinding.ensureInitialized();
 ```
 
-2. Inject fake services instead of using platform `MethodChannel` based implementations:
+2. Inject fake services instead of using the platform MethodChannel implementations:
 
-```dart
+```
 class FakeService implements SPWPermissionService {
   final PermissionStatus status;
   FakeService(this.status);
@@ -158,12 +165,11 @@ final plugin = SimplePermissionWorkflow({
 });
 ```
 
-3. To test a `Future` that should throw, do NOT `await` it directly. Use one of these forms:
-```dart
-// let expect handle the Future
-expect(plugin.launchWorkflow(SPWPermission.location), throwsArgumentError);
+3. To test a `Future` that should throw, use the forms below (don't directly await a Future expected to throw):
 
-// or await expectLater
+```dart
+expect(plugin.launchWorkflow(SPWPermission.location), throwsArgumentError);
+// or
 await expectLater(plugin.launchWorkflow(SPWPermission.location), throwsArgumentError);
 ```
 
@@ -177,12 +183,14 @@ flutter test
 
 ## Development notes
 
-- The project exposes `SimplePermissionWorkflowPlatform` and a MethodChannel implementation for runtime use. Tests should avoid swapping to platform MethodChannel unless the platform is properly mocked.
-- To add a new permission type: implement an `SPWPermissionService` in `services/impl/`, register its factory in the default constructor map or rely on injection.
-- Keep UI rationale widgets out of core logic; `withRationale` simply holds references and triggers dialogs only if a valid `BuildContext` is given.
+- To add a new permission type: implement an `SPWPermissionService` in `lib/services/impl/` and register its factory or override via constructor injection.
+- Keep UI rationale widgets out of core logic; `withRationale` only holds references and triggers dialogs when a valid `BuildContext` is available.
 
 ## Contributing
-See `CONTRIBUTING.md` for contribution guidelines, testing conventions and PR process.
+See `CONTRIBUTING.md` for contribution guidelines and PR process.
+
+## Changelog
+See `CHANGELOG.md` for recent changes. (0.0.7 adds contact cleanup helpers.)
 
 ## License
-Choose a license and add it to the repository (e.g. MIT, BSD, etc.).
+Apache-2.0 — see `LICENSE` for the full text.

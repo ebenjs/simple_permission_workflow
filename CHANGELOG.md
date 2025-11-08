@@ -1,3 +1,7 @@
+## 0.0.7
+- expose contact cleanup helper methods on `SPWContactsPermission`: `removeEmptyNames(List<Contact>)` and `removeEmptyPhoneNumbers(List<Contact>)`
+- documented contact helper usage and example showing `retrieveContacts()` and `orderContacts(...)`, and how to combine helpers
+
 ## 0.0.6
 - added support for location permission
 - added support for photos permission

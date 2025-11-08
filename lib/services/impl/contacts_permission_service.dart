@@ -25,4 +25,12 @@ class SPWContactsPermission
       ),
     );
   }
+
+  Future<List<Contact>> removeEmptyNames(List<Contact> contacts) async {
+    return contacts.where((c) => (c.displayName.trim().isNotEmpty)).toList();
+  }
+
+  Future<List<Contact>> removeEmptyPhoneNumbers(List<Contact> contacts) async {
+    return contacts.where((c) => (c.phones.isNotEmpty)).toList();
+  }
 }
