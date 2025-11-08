@@ -1,3 +1,6 @@
+## 0.0.6
+- added support for location permission
+- added support for photos permission
 ## 0.0.5
 - expose contact helper methods on `SPWContactsPermission`: `retrieveContacts()` and `orderContacts(List<Contact>)`
 - contact fetching implemented using `fast_contacts` (add runtime dependency if you use helpers)
