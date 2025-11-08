@@ -1,1 +1,1 @@
-enum SPWPermission { contacts, location }
+enum SPWPermission { contacts, notifications, nil }

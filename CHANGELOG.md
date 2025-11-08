@@ -1,3 +1,12 @@
+## 0.0.3
+
+- notifications permission added
+
+## 0.0.2
+
+- bug fixes
+
 ## 0.0.1
 
-* TODO: Describe initial release.
+- first implementation of the library
+- contacts permission support

@@ -47,10 +47,7 @@ void main() {
             FakeService(PermissionStatus.denied, PermissionStatus.granted),
       });
 
-      expect(
-        plugin.launchWorkflow(SPWPermission.location),
-        throwsArgumentError,
-      );
+      expect(plugin.launchWorkflow(SPWPermission.nil), throwsArgumentError);
 
       final res = await plugin.launchWorkflow(SPWPermission.contacts);
       expect(res.granted, isTrue);
@@ -69,10 +66,7 @@ void main() {
             FakeService(PermissionStatus.denied, PermissionStatus.denied),
       });
 
-      expect(
-        plugin.launchWorkflow(SPWPermission.location),
-        throwsArgumentError,
-      );
+      expect(plugin.launchWorkflow(SPWPermission.nil), throwsArgumentError);
 
       final res = await plugin.launchWorkflow(SPWPermission.contacts);
       expect(res.granted, isFalse);
@@ -91,10 +85,7 @@ void main() {
             FakeService(PermissionStatus.granted, PermissionStatus.granted),
       });
 
-      expect(
-        plugin.launchWorkflow(SPWPermission.location),
-        throwsArgumentError,
-      );
+      expect(plugin.launchWorkflow(SPWPermission.nil), throwsArgumentError);
 
       final res = await plugin.launchWorkflow(SPWPermission.contacts);
       expect(res.granted, isTrue);
