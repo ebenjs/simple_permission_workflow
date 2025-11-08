@@ -20,6 +20,14 @@ class SimplePermissionWorkflow {
     return SimplePermissionWorkflowPlatform.instance.getPlatformVersion();
   }
 
+  T getServiceInstance<T extends SPWPermissionService<T>>(
+    SPWPermission permission,
+  ) {
+    final concreteService = _getConcreteService(permission);
+    var concreteServiceInstance = concreteService.instance as T;
+    return concreteServiceInstance.instance;
+  }
+
   SimplePermissionWorkflow([
     Map<SPWPermission, SPWPermissionService Function()>? factory,
   ]) {
@@ -40,13 +48,7 @@ class SimplePermissionWorkflow {
   }
 
   Future<SPWResponse> launchWorkflow(SPWPermission permission) async {
-    final factory = _instanceFactory![permission];
-    if (factory == null) {
-      throw ArgumentError(
-        'Service not found for permission type ${permission.toString()}',
-      );
-    }
-    final service = factory();
+    final service = _getConcreteService(permission);
 
     SPWResponse spwResponse = SPWResponse();
     PermissionStatus checkStatus = await service.checkStatus();
@@ -150,5 +152,15 @@ class SimplePermissionWorkflow {
       barrierDismissible: barrierDismissible,
       builder: (_) => dialog,
     );
+  }
+
+  _getConcreteService(SPWPermission permission) {
+    final factory = _instanceFactory![permission];
+    if (factory == null) {
+      throw ArgumentError(
+        'Service not found for permission type ${permission.toString()}',
+      );
+    }
+    return factory();
   }
 }

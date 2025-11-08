@@ -93,6 +93,38 @@ final res = await plugin.launchWorkflow(SPWPermission.contacts);
 
 `FakeContactsService` is any implementation of `SPWPermissionService` that returns the expected `SPWResponse`.
 
+## Contacts helper methods
+
+The library exposes a typed way to access the concrete contacts permission service and use helper methods that leverage the `fast_contacts` plugin for fast contact fetching.
+
+Example usage:
+
+```dart
+final spw = SimplePermissionWorkflow();
+
+// 1) (Optional) run the permission workflow to request/check permission
+final response = await spw.launchWorkflow(SPWPermission.contacts);
+if (!response.granted) {
+  // handle denied / permanently denied
+  return;
+}
+
+// 2) Get the concrete contacts service instance (typed)
+SPWContactsPermission perm =
+    spw.getServiceInstance<SPWContactsPermission>(SPWPermission.contacts);
+
+// 3) Fetch contacts using fast_contacts (returns List<Contact>)
+List<Contact> fetchedContacts = await perm.retrieveContacts();
+
+// 4) Optionally order contacts by display name
+List<Contact> orderedContacts = await perm.orderContacts(fetchedContacts);
+```
+
+Notes:
+- `retrieveContacts()` returns a `List<Contact>` from the `fast_contacts` package. The `Contact` model comes from `fast_contacts`.
+- `orderContacts(...)` returns a new list ordered by `displayName` (case-insensitive).
+- Make sure your Android `AndroidManifest.xml` and iOS `Info.plist` contain the required permission entries for reading contacts when using this feature.
+
 ## API notes
 
 - `SimplePermissionWorkflow([Map<SPWPermission, SPWPermissionService Function()>? factories])`  

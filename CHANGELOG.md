@@ -1,3 +1,7 @@
+## 0.0.5
+- expose contact helper methods on `SPWContactsPermission`: `retrieveContacts()` and `orderContacts(List<Contact>)`
+- contact fetching implemented using `fast_contacts` (add runtime dependency if you use helpers)
+
 ## 0.0.4
 - added openSettingsOnDismiss option
 - improved documentation

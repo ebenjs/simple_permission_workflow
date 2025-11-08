@@ -6,7 +6,7 @@ import 'package:simple_permission_workflow/simple_permission_workflow.dart';
 import 'package:simple_permission_workflow/simple_permission_workflow_method_channel.dart';
 import 'package:simple_permission_workflow/simple_permission_workflow_platform_interface.dart';
 
-class FakeService implements SPWPermissionService {
+class FakeService extends SPWPermissionService<FakeService> {
   final PermissionStatus checkResult;
   final PermissionStatus result;
 
@@ -39,9 +39,6 @@ void main() {
   test(
     'launchWorkflow calls the correct service and returns the correct response for permission granted',
     () async {
-      SimplePermissionWorkflow simplePermissionWorkflowPlugin =
-          SimplePermissionWorkflow();
-
       final plugin = SimplePermissionWorkflow({
         SPWPermission.contacts: () =>
             FakeService(PermissionStatus.denied, PermissionStatus.granted),
@@ -58,9 +55,6 @@ void main() {
   test(
     'launchWorkflow calls the correct service and returns the correct response for permission denied',
     () async {
-      SimplePermissionWorkflow simplePermissionWorkflowPlugin =
-          SimplePermissionWorkflow();
-
       final plugin = SimplePermissionWorkflow({
         SPWPermission.contacts: () =>
             FakeService(PermissionStatus.denied, PermissionStatus.denied),
@@ -77,9 +71,6 @@ void main() {
   test(
     'launchWorkflow calls the correct service and returns the correct response for permission already granted',
     () async {
-      SimplePermissionWorkflow simplePermissionWorkflowPlugin =
-          SimplePermissionWorkflow();
-
       final plugin = SimplePermissionWorkflow({
         SPWPermission.contacts: () =>
             FakeService(PermissionStatus.granted, PermissionStatus.granted),
