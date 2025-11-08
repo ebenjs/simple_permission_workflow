@@ -3,7 +3,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:simple_permission_workflow/core/spw_permission.dart';
 import 'package:simple_permission_workflow/core/spw_response.dart';
 import 'package:simple_permission_workflow/services/impl/contacts_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/location_permission_service.dart';
 import 'package:simple_permission_workflow/services/impl/notifications_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/photos_permission_service.dart';
 import 'package:simple_permission_workflow/services/permission_service.dart';
 
 import 'simple_permission_workflow_platform_interface.dart';
@@ -140,6 +142,8 @@ class SimplePermissionWorkflow {
   final Map<SPWPermission, SPWPermissionService Function()> _factory = {
     SPWPermission.contacts: () => SPWContactsPermission(),
     SPWPermission.notifications: () => SPWNotificationsPermission(),
+    SPWPermission.location: () => SPWLocationPermission(),
+    SPWPermission.photos: () => SPWPhotosPermission(),
   };
 
   Future<T?> _showCustomDialog<T>({
@@ -154,7 +158,7 @@ class SimplePermissionWorkflow {
     );
   }
 
-  _getConcreteService(SPWPermission permission) {
+  SPWPermissionService _getConcreteService(SPWPermission permission) {
     final factory = _instanceFactory![permission];
     if (factory == null) {
       throw ArgumentError(
