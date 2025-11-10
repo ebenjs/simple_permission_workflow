@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:simple_permission_workflow/core/spw_permission.dart';
 import 'package:simple_permission_workflow/core/spw_response.dart';
+import 'package:simple_permission_workflow/services/impl/activity_recognition_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/app_tracking_transparency_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/assistant_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/audio_permission_service.dart';
 import 'package:simple_permission_workflow/services/impl/contacts_permission_service.dart';
 import 'package:simple_permission_workflow/services/impl/location_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/media_location_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/notification_policy_permission_service.dart';
 import 'package:simple_permission_workflow/services/impl/notifications_permission_service.dart';
 import 'package:simple_permission_workflow/services/impl/photos_permission_service.dart';
 import 'package:simple_permission_workflow/services/permission_service.dart';
@@ -140,6 +146,14 @@ class SimplePermissionWorkflow {
   void openSettings() => openAppSettings();
 
   final Map<SPWPermission, SPWPermissionService Function()> _factory = {
+    SPWPermission.accessNotificationPolicy: () =>
+        SPWNotificationPolicyPermission(),
+    SPWPermission.accessMediaLocation: () => SPWMediaLocationPermission(),
+    SPWPermission.activityRecognition: () => SPWActivityRecognitionPermission(),
+    SPWPermission.appTrackingTransparency: () =>
+        SPWAppTrackingTransparencyPermission(),
+    SPWPermission.assistant: () => SPWAssistantPermission(),
+    SPWPermission.audio: () => SPWAudioPermission(),
     SPWPermission.contacts: () => SPWContactsPermission(),
     SPWPermission.notifications: () => SPWNotificationsPermission(),
     SPWPermission.location: () => SPWLocationPermission(),

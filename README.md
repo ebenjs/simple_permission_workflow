@@ -3,11 +3,31 @@
 
 A small Dart/Flutter library that simplifies usage of the `permission_handler` inner library by offering a centralized permission workflow (status check, rationale dialog, request, open app settings).
 
+> Important: you must always declare the required permissions in the platform configuration files (for example `AndroidManifest.xml` for Android, `Info.plist` for iOS) before using helpers that read system data (contacts, location, etc.).
+
 ## Features
 - Single workflow to check and request permissions.
 - Optional rationale UI support via `withRationale`.
 - Injection of service factories to replace real permission services with fakes for tests.
 - Returns a structured `SPWResponse` describing the result.
+
+## Supported permissions
+The following permissions are exposed by the `SPWPermission` enum and handled by the library:
+
+| Permission (enum) | Description | Main platforms |
+|---|---|---|
+| `accessMediaLocation` | Access to media location metadata (photos) | Android |
+| `accessNotificationPolicy` | Access to notification policy settings (e.g. Do Not Disturb) | Android |
+| `activityRecognition` | Physical activity recognition | Android |
+| `appTrackingTransparency` | App Tracking Transparency (ATT) | iOS |
+| `assistant` | Assistant permission (if applicable) | Android/iOS (platform dependent) |
+| `audio` | Microphone / audio recording | Android/iOS |
+| `contacts` | Access to device contacts | Android/iOS |
+| `notifications` | Permission to send notifications | Android/iOS |
+| `location` | Location (coarse/fine depending on platform) | Android/iOS |
+| `photos` | Access to photos / gallery | Android/iOS |
+
+> Note: depending on the platform and OS version, some permissions can behave differently (e.g. `limited` on iOS for photos). Make sure to add the required keys in `Info.plist` and the necessary permissions in `AndroidManifest.xml`.
 
 ## Quick highlights
 - Avoids direct calls to native `permission_handler` code in tests by allowing to inject fake services.
@@ -18,7 +38,7 @@ Add the package to your `pubspec.yaml` (adjust source as required):
 
 ```yaml
 dependencies:
-  simple_permission_workflow: 0.0.7
+  simple_permission_workflow: 0.0.8
 ```
 
 Then run:
@@ -55,12 +75,12 @@ final spw = SimplePermissionWorkflow().withRationale(
 final response = await spw.launchWorkflow(SPWPermission.location);
 ```
 
-openSettingsOnDismiss (optional):
+openSettingsOnDismiss (option):
 
 - Type: `bool`
 - Default: `false`
 
-When set to `true`, if the permission is permanently denied or restricted (either from the initial status check or after a permission request), the library will — after showing the `permanentlyDeniedRationaleWidget` (if provided) and after that dialog is dismissed — call `openAppSettings()` to open the platform app settings so the user can enable the permission manually. If no `permanentlyDeniedRationaleWidget` is provided but `openSettingsOnDismiss` is `true`, the plugin will still open the app settings when it detects a permanently denied / restricted status.
+The public parameter provided to `withRationale` is called `openSettingsOnDismiss` (internally the class uses the private field `_openSettingsOnDismiss`). When set to `true`, if the final status is `permanentlyDenied` or `restricted` (either from the initial status check or after the request), the library will first display the `permanentlyDeniedRationaleWidget` (if provided). After that dialog is dismissed (or immediately if no dialog is provided), the library will call `openAppSettings()` to open the app settings so the user can enable the permission manually.
 
 Example enabling automatic opening of app settings after dismissing the permanently-denied rationale dialog:
 
@@ -97,7 +117,7 @@ final res = await plugin.launchWorkflow(SPWPermission.contacts);
 
 The library exposes a typed way to access the concrete contacts permission service and helper methods that leverage the `fast_contacts` plugin for fast contact fetching and simple cleanup.
 
-Example usage:
+Example usage (explicitly shown):
 
 ```dart
 final spw = SimplePermissionWorkflow();
@@ -190,7 +210,7 @@ flutter test
 See `CONTRIBUTING.md` for contribution guidelines and PR process.
 
 ## Changelog
-See `CHANGELOG.md` for recent changes. (0.0.7 adds contact cleanup helpers.)
+See `CHANGELOG.md` for recent changes. (0.0.8 includes additional permissions added to `SPWPermission`.)
 
 ## License
 Apache-2.0 — see `LICENSE` for the full text.

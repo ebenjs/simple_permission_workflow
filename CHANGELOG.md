@@ -1,3 +1,6 @@
+## 0.0.8
+- Added additional permissions to the `SPWPermission` enum.
+
 ## 0.0.7
 - expose contact cleanup helper methods on `SPWContactsPermission`: `removeEmptyNames(List<Contact>)` and `removeEmptyPhoneNumbers(List<Contact>)`
 - documented contact helper usage and example showing `retrieveContacts()` and `orderContacts(...)`, and how to combine helpers

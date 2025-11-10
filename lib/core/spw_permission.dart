@@ -1,1 +1,13 @@
-enum SPWPermission { contacts, notifications, location, photos, nil }
+enum SPWPermission {
+  accessMediaLocation,
+  accessNotificationPolicy,
+  activityRecognition,
+  appTrackingTransparency,
+  assistant,
+  audio,
+  contacts,
+  notifications,
+  location,
+  photos,
+  nil,
+}
