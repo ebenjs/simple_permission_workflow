@@ -6,7 +6,16 @@ import 'package:simple_permission_workflow/services/impl/activity_recognition_pe
 import 'package:simple_permission_workflow/services/impl/app_tracking_transparency_permission_service.dart';
 import 'package:simple_permission_workflow/services/impl/assistant_permission_service.dart';
 import 'package:simple_permission_workflow/services/impl/audio_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/background_refresh_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/bluetooth_advertise_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/bluetooth_connect_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/bluetooth_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/bluetooth_scan_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/calendar_full_access_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/calendar_write_only_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/camera_permission_service.dart';
 import 'package:simple_permission_workflow/services/impl/contacts_permission_service.dart';
+import 'package:simple_permission_workflow/services/impl/critical_alerts_permission_service.dart';
 import 'package:simple_permission_workflow/services/impl/location_permission_service.dart';
 import 'package:simple_permission_workflow/services/impl/media_location_permission_service.dart';
 import 'package:simple_permission_workflow/services/impl/notification_policy_permission_service.dart';
@@ -154,7 +163,16 @@ class SimplePermissionWorkflow {
         SPWAppTrackingTransparencyPermission(),
     SPWPermission.assistant: () => SPWAssistantPermission(),
     SPWPermission.audio: () => SPWAudioPermission(),
+    SPWPermission.backgroundRefresh: () => SPWBackgroundRefreshPermission(),
+    SPWPermission.bluetooth: () => SPWBluetoothPermission(),
+    SPWPermission.bluetoothAdvertise: () => SPWBluetoothAdvertisePermission(),
+    SPWPermission.bluetoothConnect: () => SPWBluetoothConnectPermission(),
+    SPWPermission.bluetoothScan: () => SPWBluetoothScanPermission(),
+    SPWPermission.calendarFullAccess: () => SPWCalendarFullAccessPermission(),
+    SPWPermission.calendarWriteOnly: () => SPWCalendarWriteOnlyPermission(),
+    SPWPermission.camera: () => SPWCameraPermission(),
     SPWPermission.contacts: () => SPWContactsPermission(),
+    SPWPermission.criticalAlerts: () => SPWCriticalAlertsPermission(),
     SPWPermission.notifications: () => SPWNotificationsPermission(),
     SPWPermission.location: () => SPWLocationPermission(),
     SPWPermission.photos: () => SPWPhotosPermission(),

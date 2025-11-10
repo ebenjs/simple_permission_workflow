@@ -11,24 +11,6 @@ A small Dart/Flutter library that simplifies usage of the `permission_handler` i
 - Injection of service factories to replace real permission services with fakes for tests.
 - Returns a structured `SPWResponse` describing the result.
 
-## Supported permissions
-The following permissions are exposed by the `SPWPermission` enum and handled by the library:
-
-| Permission (enum) | Description | Main platforms |
-|---|---|---|
-| `accessMediaLocation` | Access to media location metadata (photos) | Android |
-| `accessNotificationPolicy` | Access to notification policy settings (e.g. Do Not Disturb) | Android |
-| `activityRecognition` | Physical activity recognition | Android |
-| `appTrackingTransparency` | App Tracking Transparency (ATT) | iOS |
-| `assistant` | Assistant permission (if applicable) | Android/iOS (platform dependent) |
-| `audio` | Microphone / audio recording | Android/iOS |
-| `contacts` | Access to device contacts | Android/iOS |
-| `notifications` | Permission to send notifications | Android/iOS |
-| `location` | Location (coarse/fine depending on platform) | Android/iOS |
-| `photos` | Access to photos / gallery | Android/iOS |
-
-> Note: depending on the platform and OS version, some permissions can behave differently (e.g. `limited` on iOS for photos). Make sure to add the required keys in `Info.plist` and the necessary permissions in `AndroidManifest.xml`.
-
 ## Quick highlights
 - Avoids direct calls to native `permission_handler` code in tests by allowing to inject fake services.
 - Designed to be small and testable.
@@ -38,7 +20,7 @@ Add the package to your `pubspec.yaml` (adjust source as required):
 
 ```yaml
 dependencies:
-  simple_permission_workflow: 0.0.8
+  simple_permission_workflow: 0.0.9
 ```
 
 Then run:
@@ -151,6 +133,32 @@ Notes:
 - `removeEmptyPhoneNumbers(...)` filters out contacts that don't have at least one phone number.
 - Make sure your Android `AndroidManifest.xml` and iOS `Info.plist` contain the required permission entries for reading contacts when using these helpers.
 
+## Supported permissions
+The following permissions are exposed by the `SPWPermission` enum and handled by the library:
+
+| Permission (enum) | Description | Main platforms |
+|---|---|---|
+| `accessMediaLocation` | Access to media location metadata (photos) | Android |
+| `accessNotificationPolicy` | Access to notification policy settings (e.g. Do Not Disturb) | Android |
+| `activityRecognition` | Physical activity recognition | Android |
+| `appTrackingTransparency` | App Tracking Transparency (ATT) | iOS |
+| `assistant` | Assistant permission (if applicable) | Android/iOS (platform dependent) |
+| `audio` | Microphone / audio recording | Android/iOS |
+| `backgroundRefresh` | Background app refresh (iOS background fetch / tasks) | iOS/Android |
+| `bluetooth` | Bluetooth access | Android/iOS |
+| `bluetoothAdvertise` | Bluetooth advertise (peripheral mode) | Android |
+| `bluetoothConnect` | Bluetooth connect (to devices) | Android |
+| `bluetoothScan` | Bluetooth scanning | Android |
+| `calendar` | Calendar access (general) | Android/iOS |
+| `calendarFullAccess` | Full access to calendar events | Android/iOS |
+| `calendarWriteOnly` | Write-only calendar access | Android/iOS |
+| `camera` | Camera access | Android/iOS |
+| `contacts` | Access to device contacts | Android/iOS |
+| `criticalAlerts` | Critical alerts permission (iOS) | iOS |
+| `notifications` | Permission to send notifications | Android/iOS |
+| `location` | Location (coarse/fine depending on platform) | Android/iOS |
+| `photos` | Access to photos / gallery | Android/iOS |
+
 ## API notes
 
 - `SimplePermissionWorkflow([Map<SPWPermission, SPWPermissionService Function()>? factories])`
@@ -214,3 +222,4 @@ See `CHANGELOG.md` for recent changes. (0.0.8 includes additional permissions ad
 
 ## License
 Apache-2.0 — see `LICENSE` for the full text.
+

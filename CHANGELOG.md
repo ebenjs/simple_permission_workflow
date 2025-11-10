@@ -1,3 +1,6 @@
+## 0.0.9
+- Added new permissions to the `SPWPermission` enum.
+
 ## 0.0.8
 - Added additional permissions to the `SPWPermission` enum.
 
