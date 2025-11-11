@@ -1,6 +1,6 @@
 name: simple_permission_workflow
-description: "A small Dart/Flutter library that simplifies usage of the permission_handler inner library by offering a centralized permission workflow (status check, rationale dialog, request, open app settings)."
-version: 0.0.1
+description: "A library that simplifies usage of the permission_handler inner library by offering a centralized permission workflow."
+version: 0.0.9
 homepage: https://github.com/ebenjs/simple_permission_workflow.git
 repository: https://github.com/ebenjs/simple_permission_workflow.git
 license: "Apache-2.0"
@@ -10,6 +10,7 @@ environment:
   flutter: '>=3.3.0'
 
 dependencies:
+  fast_contacts: ^5.0.1
   flutter:
     sdk: flutter
   permission_handler: ^12.0.1

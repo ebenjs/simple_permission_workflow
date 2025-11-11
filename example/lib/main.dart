@@ -32,21 +32,26 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late BuildContext _appBuildContext;
   SimplePermissionWorkflow spw = SimplePermissionWorkflow();
 
-  Widget testDialog = AlertDialog(
+  Widget testDialog(BuildContext context) => AlertDialog(
     title: const Text('Hello 👋'),
     content: const Text('This is an AlertDialog!'),
-    actions: [TextButton(onPressed: () {}, child: const Text('Close'))],
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Close'),
+      ),
+    ],
   );
 
   @override
   Widget build(BuildContext context) {
-    _appBuildContext = context;
     spw = spw.withRationale(
-      buildContext: _appBuildContext,
-      rationaleWidget: testDialog,
+      buildContext: context,
+      rationaleWidget: testDialog(context),
+      permanentlyDeniedRationaleWidget: testDialog(context),
+      openSettingsOnDismiss: true,
     );
 
     return Scaffold(

@@ -3,6 +3,8 @@
 
 A small Dart/Flutter library that simplifies usage of the `permission_handler` inner library by offering a centralized permission workflow (status check, rationale dialog, request, open app settings).
 
+> Important: you must always declare the required permissions in the platform configuration files (for example `AndroidManifest.xml` for Android, `Info.plist` for iOS) before using helpers that read system data (contacts, location, etc.).
+
 ## Features
 - Single workflow to check and request permissions.
 - Optional rationale UI support via `withRationale`.
@@ -18,13 +20,12 @@ Add the package to your `pubspec.yaml` (adjust source as required):
 
 ```yaml
 dependencies:
-  simple_permission_workflow:
-    path: ../simple_permission_workflow
+  simple_permission_workflow: 0.0.9
 ```
 
 Then run:
 
-```shell
+```bash
 flutter pub get
 ```
 
@@ -49,11 +50,34 @@ Using `withRationale` (optional): supply widgets to display rationale dialogs be
 final spw = SimplePermissionWorkflow().withRationale(
   buildContext: context,
   rationaleWidget: MyRationaleWidget(),               // shown when rationale needed
-  permanentlyDeniedRationaleWidget: MyPermanentWidget()// shown when permanently denied
+  permanentlyDeniedRationaleWidget: MyPermanentWidget(), // shown when permanently denied
+  openSettingsOnDismiss: true, // optional: open app settings after dismiss
 );
 
 final response = await spw.launchWorkflow(SPWPermission.location);
 ```
+
+openSettingsOnDismiss (option):
+
+- Type: `bool`
+- Default: `false`
+
+The public parameter provided to `withRationale` is called `openSettingsOnDismiss` (internally the class uses the private field `_openSettingsOnDismiss`). When set to `true`, if the final status is `permanentlyDenied` or `restricted` (either from the initial status check or after the request), the library will first display the `permanentlyDeniedRationaleWidget` (if provided). After that dialog is dismissed (or immediately if no dialog is provided), the library will call `openAppSettings()` to open the app settings so the user can enable the permission manually.
+
+Example enabling automatic opening of app settings after dismissing the permanently-denied rationale dialog:
+
+```dart
+final spw = SimplePermissionWorkflow().withRationale(
+  buildContext: context,
+  rationaleWidget: MyRationaleWidget(),
+  permanentlyDeniedRationaleWidget: MyPermanentWidget(),
+  openSettingsOnDismiss: true, // open settings after permanently-denied dialog dismiss
+);
+
+final response = await spw.launchWorkflow(SPWPermission.contacts);
+```
+
+Use this option thoughtfully: opening settings interrupts the app flow and may not be appropriate in all UX contexts (consider platform conventions and user expectations).
 
 Service factory injection (recommended for testing):
 
@@ -71,13 +95,79 @@ final res = await plugin.launchWorkflow(SPWPermission.contacts);
 
 `FakeContactsService` is any implementation of `SPWPermissionService` that returns the expected `SPWResponse`.
 
+## Contacts helper methods
+
+The library exposes a typed way to access the concrete contacts permission service and helper methods that leverage the `fast_contacts` plugin for fast contact fetching and simple cleanup.
+
+Example usage (explicitly shown):
+
+```dart
+final spw = SimplePermissionWorkflow();
+
+// 1) Ensure permission is granted via workflow
+final response = await spw.launchWorkflow(SPWPermission.contacts);
+if (!response.granted) {
+  // handle denied / permanently denied
+  return;
+}
+
+// 2) Get the concrete contacts service instance (typed)
+SPWContactsPermission perm =
+    spw.getServiceInstance<SPWContactsPermission>(SPWPermission.contacts);
+
+// 3) Fetch contacts (uses fast_contacts internally)
+List<Contact> fetchedContacts = await perm.retrieveContacts();
+
+// 4) Order contacts by display name
+List<Contact> orderedContacts = await perm.orderContacts(fetchedContacts);
+
+// 5) Clean up contacts: remove empty names and contacts without phones
+final nonEmptyNames = await perm.removeEmptyNames(orderedContacts);
+final withPhones = await perm.removeEmptyPhoneNumbers(nonEmptyNames);
+```
+
+Notes:
+- `retrieveContacts()` returns a `List<Contact>` from the `fast_contacts` package.
+- `orderContacts(...)` returns a new list ordered by `displayName` (case-insensitive).
+- `removeEmptyNames(...)` filters out contacts whose `displayName` is empty or only whitespace.
+- `removeEmptyPhoneNumbers(...)` filters out contacts that don't have at least one phone number.
+- Make sure your Android `AndroidManifest.xml` and iOS `Info.plist` contain the required permission entries for reading contacts when using these helpers.
+
+## Supported permissions
+The following permissions are exposed by the `SPWPermission` enum and handled by the library:
+
+| Permission (enum) | Description | Main platforms |
+|---|---|---|
+| `accessMediaLocation` | Access to media location metadata (photos) | Android |
+| `accessNotificationPolicy` | Access to notification policy settings (e.g. Do Not Disturb) | Android |
+| `activityRecognition` | Physical activity recognition | Android |
+| `appTrackingTransparency` | App Tracking Transparency (ATT) | iOS |
+| `assistant` | Assistant permission (if applicable) | Android/iOS (platform dependent) |
+| `audio` | Microphone / audio recording | Android/iOS |
+| `backgroundRefresh` | Background app refresh (iOS background fetch / tasks) | iOS/Android |
+| `bluetooth` | Bluetooth access | Android/iOS |
+| `bluetoothAdvertise` | Bluetooth advertise (peripheral mode) | Android |
+| `bluetoothConnect` | Bluetooth connect (to devices) | Android |
+| `bluetoothScan` | Bluetooth scanning | Android |
+| `calendar` | Calendar access (general) | Android/iOS |
+| `calendarFullAccess` | Full access to calendar events | Android/iOS |
+| `calendarWriteOnly` | Write-only calendar access | Android/iOS |
+| `camera` | Camera access | Android/iOS |
+| `contacts` | Access to device contacts | Android/iOS |
+| `criticalAlerts` | Critical alerts permission (iOS) | iOS |
+| `notifications` | Permission to send notifications | Android/iOS |
+| `location` | Location (coarse/fine depending on platform) | Android/iOS |
+| `photos` | Access to photos / gallery | Android/iOS |
+
 ## API notes
 
-- `SimplePermissionWorkflow([Map<SPWPermission, SPWPermissionService Function()>? factories])`  
-  By default the plugin registers real service factories (e.g. `SPWContactsPermission`). Passing a map allows overriding any permission service with a factory returning a custom or fake implementation.
+- `SimplePermissionWorkflow([Map<SPWPermission, SPWPermissionService Function()>? factories])`
+  - By default the plugin registers real service factories (e.g. `SPWContactsPermission`). Passing a map allows overriding any permission service with a factory returning a custom or fake implementation (useful for tests).
 
-- `Future<SPWResponse> launchWorkflow(SPWPermission permission)`  
-  Finds the factory for `permission`, instantiates the service and runs its `request` method. If no factory is found, it throws `ArgumentError`.
+- `Future<SPWResponse> launchWorkflow(SPWPermission permission)`
+  - Finds the factory for `permission`, instantiates the service and runs its `request` method. If no factory is found, it throws `ArgumentError`.
+
+- `SimplePermissionWorkflow.withRationale(...)` supports an optional `openSettingsOnDismiss` boolean parameter (default `false`). When true, the workflow will call `openAppSettings()` after permanently denied / restricted status is shown and the permanently-denied rationale dialog (if any) is dismissed. For contacts flows that fetch or enumerate device contacts, prefer to call `retrieveContacts()` only after `launchWorkflow` returns granted to avoid platform exceptions.
 
 ## Testing
 
@@ -88,9 +178,9 @@ To avoid `MissingPluginException` and binding errors in tests:
 TestWidgetsFlutterBinding.ensureInitialized();
 ```
 
-2. Inject fake services instead of using platform `MethodChannel` based implementations:
+2. Inject fake services instead of using the platform MethodChannel implementations:
 
-```dart
+```
 class FakeService implements SPWPermissionService {
   final PermissionStatus status;
   FakeService(this.status);
@@ -103,12 +193,11 @@ final plugin = SimplePermissionWorkflow({
 });
 ```
 
-3. To test a `Future` that should throw, do NOT `await` it directly. Use one of these forms:
-```dart
-// let expect handle the Future
-expect(plugin.launchWorkflow(SPWPermission.location), throwsArgumentError);
+3. To test a `Future` that should throw, use the forms below (don't directly await a Future expected to throw):
 
-// or await expectLater
+```dart
+expect(plugin.launchWorkflow(SPWPermission.location), throwsArgumentError);
+// or
 await expectLater(plugin.launchWorkflow(SPWPermission.location), throwsArgumentError);
 ```
 
@@ -122,12 +211,15 @@ flutter test
 
 ## Development notes
 
-- The project exposes `SimplePermissionWorkflowPlatform` and a MethodChannel implementation for runtime use. Tests should avoid swapping to platform MethodChannel unless the platform is properly mocked.
-- To add a new permission type: implement an `SPWPermissionService` in `services/impl/`, register its factory in the default constructor map or rely on injection.
-- Keep UI rationale widgets out of core logic; `withRationale` simply holds references and triggers dialogs only if a valid `BuildContext` is given.
+- To add a new permission type: implement an `SPWPermissionService` in `lib/services/impl/` and register its factory or override via constructor injection.
+- Keep UI rationale widgets out of core logic; `withRationale` only holds references and triggers dialogs when a valid `BuildContext` is available.
 
 ## Contributing
-See `CONTRIBUTING.md` for contribution guidelines, testing conventions and PR process.
+See `CONTRIBUTING.md` for contribution guidelines and PR process.
+
+## Changelog
+See `CHANGELOG.md` for recent changes. (0.0.8 includes additional permissions added to `SPWPermission`.)
 
 ## License
-Choose a license and add it to the repository (e.g. MIT, BSD, etc.).
+Apache-2.0 — see `LICENSE` for the full text.
+
